@@ -1,5 +1,6 @@
-@constants {
-    grey: #3c3c3c;
+var grey = #3c3c3c;
+var left = {
+    float: left;
 }
 
 #chat-toggle {
@@ -9,7 +10,7 @@
 
 #chat-list-channels {
     margin-left: 1px;
-    float      : left;
+    $left;
     width      : 149px;
     overflow   : hidden;
     

@@ -211,16 +211,12 @@ function eCssParse($aSpeConfig, $sFilename) {
 
 			// Ouverture de bloc
 			if (mb_strpos($sLine, '{') !== false) {
-				$bConstant = false;
-				$bMixin    = false;
-				// Bloc ouvert = constantes
-				if (mb_substr($sLine, 0, 10) == '@constants') {
-					$bConstant = true;
-				}
+				$bMixin     = false;
+				
 				// Bloc ouvert = mixins
-				elseif (mb_substr($sLine, 0, 1) == '=') {
-					$bMixin    = true;
-					$sMixin    = trim(str_replace('{', '', mb_substr($sLine, 1)));
+				if (mb_substr($sLine, 0, 4) == 'var ') {
+				    $bMixin = true;
+				    $sMixin = preg_replace('#var ([a-zA-Z]+) ?\= ?\{?#i', '$1', $sLine);
 				}
 				// Bloc ouvert = class normal
 				else {
@@ -240,20 +236,14 @@ function eCssParse($aSpeConfig, $sFilename) {
 				$iLevel--;
 			}
 			elseif (!empty($sLine)) {
-				// Si on est à l'intérieur du bloc constantes
-				if ($bConstant) {
-					list($sConstantName, $sConstantValue) = explode(':', $sLine);
-					$aConstant['$'.trim($sConstantName)] = mb_substr(trim($sConstantValue), 0, -1);
-				}
-				// Si on est à l'intérieur d'un bloc mixin
-				elseif ($bMixin) {
+			    if ($bMixin) {
 					$aMixin[$sMixin][] = $sLine;
 				}
 				// Si il s'agit d'un bloc classique
 				elseif ($iLevel > 0 && !empty($iIdBloc)) {
 					// Propriétés = mixin
-					if(mb_substr($sLine, 0, 1) == '+' && is_array($aMixin[mb_substr($sLine, 1)])) {
-						foreach($aMixin[mb_substr($sLine, 1)] as $sProperty) {
+					if(mb_substr($sLine, 0, 1) == '$' && is_array($aMixin[mb_substr($sLine, 1, -1)])) {
+						foreach($aMixin[mb_substr($sLine, 1, -1)] as $sProperty) {
 							list($sAttribut, $sValue) = explode(':', $sProperty);
 							$aProperties[$iIdBloc][]  = trim($sAttribut).'-: '.trim($sValue);
 						}
@@ -263,6 +253,10 @@ function eCssParse($aSpeConfig, $sFilename) {
 						list($sAttribut, $sValue) = explode(':', $sLine);
 						$aProperties[$iIdBloc][]    = trim($sAttribut).'-: '.trim($sValue);
 					}
+				}
+				elseif (mb_substr($sLine, 0, 4) == 'var ') {
+				    preg_match('#var ([a-zA-Z]+) ?\= ?(.+);#i', $sLine, $aMatch);
+				    $aConstant['$'.trim($aMatch[1])] = trim($aMatch[2]);
 				}
 				// Si on est en dehors de tout bloc
 				else {
