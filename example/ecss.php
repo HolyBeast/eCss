@@ -216,7 +216,7 @@ function eCssParse($aSpeConfig, $sFilename) {
 				// Bloc ouvert = mixins
 				if (mb_substr($sLine, 0, 4) == 'var ') {
 				    $bMixin = true;
-				    $sMixin = preg_replace('#var ([a-zA-Z]+) ?\= ?\{?#i', '$1', $sLine);
+				    $sMixin = preg_replace('#var ([a-zA-Z]+) *\= *\{?#i', '$1', $sLine);
 				}
 				// Bloc ouvert = class normal
 				else {
@@ -251,11 +251,11 @@ function eCssParse($aSpeConfig, $sFilename) {
 					// Propriété = propriété normale
 					else {
 						list($sAttribut, $sValue) = explode(':', $sLine);
-						$aProperties[$iIdBloc][]    = trim($sAttribut).'-: '.trim($sValue);
+						$aProperties[$iIdBloc][]  = trim($sAttribut).'-: '.trim($sValue);
 					}
 				}
 				elseif (mb_substr($sLine, 0, 4) == 'var ') {
-				    preg_match('#var ([a-zA-Z]+) ?\= ?(.+);#i', $sLine, $aMatch);
+				    preg_match('#var ([a-zA-Z]+) *\= *(.+);#i', $sLine, $aMatch);
 				    $aConstant['$'.trim($aMatch[1])] = trim($aMatch[2]);
 				}
 				// Si on est en dehors de tout bloc
